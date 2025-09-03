@@ -3,7 +3,7 @@
 import sqlite3
 
 def criar_tabela():
-    conexao = sqlite3.connect('example.db')
+    conexao = sqlite3.connect('tccagenteia.db')
     cursor = conexao.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
                     id INTEGER PRIMARY KEY NOT NULL,
@@ -13,21 +13,21 @@ def criar_tabela():
     conexao.close()
     
 def adicionar_usuario(nome, idade):
-    conexao = sqlite3.connect('example.db')
+    conexao = sqlite3.connect('tccagenteia.db')
     cursor = conexao.cursor()
     cursor.execute('''INSERT INTO usuarios (nome, idade) VALUES (?, ?)''', (nome, idade))
     conexao.commit()
     conexao.close()
     
 def deletar_usuario(id):
-    conexao = sqlite3.connect('example.db')
+    conexao = sqlite3.connect('tccagenteia.db')
     cursor = conexao.cursor()
     cursor.execute('''DELETE FROM usuarios WHERE id = ?''', (id,))
     conexao.commit()
     conexao.close()
     
 def listar_usuarios():
-    conexao = sqlite3.connect('example.db')
+    conexao = sqlite3.connect('tccagenteia.db')
     cursor = conexao.cursor()
     cursor.execute('''SELECT * FROM usuarios''')
     usuarios = cursor.fetchall()
@@ -36,14 +36,14 @@ def listar_usuarios():
     conexao.close()
     
 def atualizar_usuario(id, nome, idade):
-    conexao = sqlite3.connect('example.db')
+    conexao = sqlite3.connect('tccagenteia.db')
     cursor = conexao.cursor()
     cursor.execute('''UPDATE usuarios SET nome = ?, idade = ? WHERE id = ? ''', (nome, idade, id))
     conexao.commit()
     conexao.close()
     
 def listar_usuarios_idade(idade):
-    conexao = sqlite3.connect('example.db')
+    conexao = sqlite3.connect('tccagenteia.db')
     cursor = conexao.cursor()
     cursor.execute('''SELECT * FROM usuarios WHERE idade <= ? ''',(idade,))
     usuarios = cursor.fetchall()
@@ -103,7 +103,7 @@ def criar_tabela():
                                       host="localhost",
                                       user="root",
                                       password="",
-                                      database="agenda")
+                                      database="tccagenteia")
     cursor = conexao.cursor()
     conexao.commit()
     conexao.close()
@@ -113,7 +113,7 @@ def adicionar_usuario(nome, email, fone):
                                       host="localhost",
                                       user="root",
                                       password="",
-                                      database="agenda")
+                                      database="tccagenteia")
     cursor = conexao.cursor()
     sql = "INSERT INTO pessoas (nome, email, fone) VALUES (%s, %s, %s)"
     val = (nome, email, fone)
@@ -126,7 +126,7 @@ def listar_usuario():
                                       host="localhost",
                                       user="root",
                                       password="",
-                                      database="agenda")
+                                      database="tccagenteia")
     cursor = conexao.cursor()
     sql = "SELECT * from pessoas"
     cursor.execute(sql)
@@ -141,7 +141,7 @@ def atualizar_usuario(id, nome, email, fone):
                                       host="localhost",
                                       user="root",
                                       password="",
-                                      database="agenda")
+                                      database="tccagenteia")
     cursor = conexao.cursor()
     
     sql = "UPDATE pessoas SET nome = %s, email = %s, fone = %s WHERE id = %s"
@@ -155,7 +155,7 @@ def deletar_usuario(id):
                                       host="localhost",
                                       user="root",
                                       password="",
-                                      database="agenda")
+                                      database="tccagenteia")
     cursor = conexao.cursor()
     
     sql = "DELETE FROM pessoas WHERE id = %s"

@@ -28,12 +28,13 @@ uv init
 uv venv
 
 # 5. Ative o ambiente virtual
-source ./venv/bin/activate  # Linux/macOS
-# .\venv\Scripts\activate     # Windows (PowerShell)
+source .venv/bin/activate  # ubuntu - wsl
 
 # 6. Instale a biblioteca agno ou qualquer outra que usar
-uv add agno
+uv add agno, op
 
 # Rode seu projeto
 python meu_script.py
 
+# rode o codigo
+python 5_Codigo_GPT_TCC.py , ao abrir o link coloque no endpoint http://localhost:777/V1
