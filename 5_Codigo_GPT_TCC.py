@@ -11,8 +11,6 @@ load_dotenv()
 
 model = OpenAIChat(id="gpt-4.1-mini")
 
-# conectando o banco 
-
 # criar banco
 def criar_tabela(nome_tabela, campos):
     """
@@ -46,151 +44,130 @@ def criar_tabela(nome_tabela, campos):
     conexao.commit()
     conexao.close()
 
-
-# adicionar usuario
-def adicionar_usuario(nome, idade):
+def inserir_dados(nome_tabela, dados):
     """
-    Esta função adiciona um novo usuário na tabela 'usuarios' do banco de dados SQLite chamado 'exemplo.db'.
+    Insere dados em uma tabela do banco SQLite 'exemplo.db'.
 
-    1. A função recebe dois parâmetros:
-    - nome: o nome do usuário (string).
-    - idade: a idade do usuário (inteiro).
+    Parâmetros:
+    - nome_tabela: nome da tabela onde os dados serão inseridos.
+    - dados: dicionário com chave=nome do campo e valor=valor a ser inserido.
 
-    2. Primeiro, conecta ao banco de dados 'exemplo.db'.
-    Se o arquivo não existir, o SQLite cria automaticamente.
-
-    3. Cria um cursor, que é usado para executar comandos SQL no banco.
-
-    4. Monta o comando SQL de inserção:
-       "INSERT INTO usuarios (nome, idade) VALUES (?, ?)"
-       Os "?" são *placeholders* para evitar SQL Injection.
-       Os valores reais são passados separadamente como parâmetros.
-
-    5. Executa o comando passando o nome e a idade do usuário.
-
-    6. Confirma as mudanças no banco (commit) e fecha a conexão.
+    Exemplo:
+    inserir_dados("usuarios", {"nome": "João", "idade": 25, "email": "joao@email.com"})
     """
     conexao = sqlite3.connect('exemplo.db')
     cursor = conexao.cursor()
 
-    comando = "INSERT INTO usuarios (nome, idade) VALUES (?, ?)"
-    cursor.execute(comando, (nome, idade))
+    colunas = ', '.join(dados.keys())  # "nome, idade, email"
+    placeholders = ', '.join(['?' for _ in dados])  # "?, ?, ?"
+    valores = tuple(dados.values())  # ("João", 25, "joao@email.com")
 
+    comando = f"INSERT INTO {nome_tabela} ({colunas}) VALUES ({placeholders})"
+    
+    cursor.execute(comando, valores)
     conexao.commit()
     conexao.close()
 
-# atualizar usuario 
-def atualizar_usuario(id_usuario, novo_nome, nova_idade):
+def atualizar_registros(nome_tabela, condicoes, novos_dados):
     """
-    Esta função atualiza os dados de um usuário existente na tabela 'usuarios' do banco de dados SQLite chamado 'exemplo.db'.
+    Atualiza um ou mais registros em uma tabela SQLite com base em condições.
 
-    1. A função recebe três parâmetros:
-    - id_usuario: o ID do usuário que será atualizado (inteiro).
-    - novo_nome: o novo nome que substituirá o antigo (string).
-    - nova_idade: a nova idade que substituirá a antiga (inteiro).
+    Parâmetros:
+    - nome_tabela: nome da tabela no banco.
+    - condicoes: dicionário com os critérios de seleção (ex: {"id": 1}).
+    - novos_dados: dicionário com os campos a serem atualizados e seus novos valores.
 
-    2. Primeiro, conecta ao banco de dados 'exemplo.db'.
-
-    3. Cria um cursor, usado para executar comandos SQL no banco.
-
-    4. Monta o comando SQL de atualização:
-       "UPDATE usuarios SET nome = ?, idade = ? WHERE id = ?"
-       Os "?" são placeholders para evitar SQL Injection.
-
-    5. Executa o comando passando os novos valores e o ID do usuário.
-
-    6. Confirma as mudanças no banco (commit) e fecha a conexão.
+    Exemplo:
+    atualizar_registros("usuarios", {"id": 1}, {"nome": "Novo Nome", "idade": 30})
     """
     conexao = sqlite3.connect('exemplo.db')
     cursor = conexao.cursor()
 
-    comando = "UPDATE usuarios SET nome = ?, idade = ? WHERE id = ?"
-    cursor.execute(comando, (novo_nome, nova_idade, id_usuario))
+    # Monta parte do SET
+    set_str = ', '.join([f"{campo} = ?" for campo in novos_dados])
+    valores = list(novos_dados.values())
 
+    # Monta parte do WHERE
+    where_str = ' AND '.join([f"{campo} = ?" for campo in condicoes])
+    valores += list(condicoes.values())
+
+    comando = f"UPDATE {nome_tabela} SET {set_str} WHERE {where_str}"
+
+    cursor.execute(comando, valores)
+    conexao.commit()
+    conexao.close()
+    
+def excluir_registros(nome_tabela, condicoes):
+    """
+    Exclui registros de uma tabela SQLite com base em condições.
+
+    Parâmetros:
+    - nome_tabela: nome da tabela.
+    - condicoes: dicionário com os critérios de exclusão (ex: {"id": 2}).
+
+    Exemplo:
+    excluir_registros("usuarios", {"id": 2})
+    """
+    conexao = sqlite3.connect('exemplo.db')
+    cursor = conexao.cursor()
+
+    where_str = ' AND '.join([f"{campo} = ?" for campo in condicoes])
+    valores = list(condicoes.values())
+
+    comando = f"DELETE FROM {nome_tabela} WHERE {where_str}"
+
+    cursor.execute(comando, valores)
     conexao.commit()
     conexao.close()
 
-
-# listar usuario
-def listar_usuarios():
+def listar_registros(nome_tabela, campos='*', condicoes=None):
     """
-    Esta função recupera e retorna todos os usuários da tabela 'usuarios' 
-    no banco de dados SQLite chamado 'exemplo.db'.
+    Lista registros de uma tabela SQLite com campos e condições opcionais.
 
-    1. Não recebe parâmetros, pois lista todos os usuários cadastrados.
+    Parâmetros:
+    - nome_tabela: nome da tabela no banco de dados.
+    - campos: lista com os nomes dos campos a selecionar (ex: ["nome", "idade"]) ou "*" para todos.
+    - condicoes: dicionário com condições do WHERE (ex: {"idade": 25}) ou None para nenhuma condição.
 
-    2. Conecta ao banco de dados 'exemplo.db'.
-
-    3. Cria um cursor, que é usado para executar comandos SQL.
-
-    4. Monta o comando SQL de consulta:
-       "SELECT * FROM usuarios"
-       Isso retorna todas as linhas da tabela.
-
-    5. Executa o comando e armazena os resultados usando fetchall().
-
-    6. Fecha a conexão com o banco.
-
-    7. Retorna a lista de usuários, onde cada item é uma tupla no formato:
-       (id, nome, idade).
+    Retorna:
+    - Lista de tuplas com os registros encontrados.
+    
+    Exemplo:
+    listar_registros("usuarios")  # Lista todos os campos de todos os usuários
+    listar_registros("usuarios", campos=["nome"])  # Lista só os nomes
+    listar_registros("usuarios", campos=["nome", "idade"], condicoes={"idade": 30})  # Filtra por idade
     """
     conexao = sqlite3.connect('exemplo.db')
     cursor = conexao.cursor()
 
-    comando = "SELECT * FROM usuarios"
-    cursor.execute(comando)
+    # Define os campos a selecionar
+    if isinstance(campos, list):
+        campos_str = ", ".join(campos)
+    else:
+        campos_str = campos  # Assume que já é "*"
 
-    usuarios = cursor.fetchall()
+    comando = f"SELECT {campos_str} FROM {nome_tabela}"
+
+    valores = []
+    if condicoes:
+        clausulas = [f"{campo} = ?" for campo in condicoes]
+        comando += " WHERE " + " AND ".join(clausulas)
+        valores = list(condicoes.values())
+
+    cursor.execute(comando, valores)
+    resultados = cursor.fetchall()
 
     conexao.close()
-    return usuarios
-
-
-# deletar usuario 
-def deletar_usuario(id_usuario):
-    """
-    Esta função remove um usuário específico da tabela 'usuarios' 
-    no banco de dados SQLite chamado 'exemplo.db'.
-
-    1. A função recebe um parâmetro:
-    - id_usuario: o ID do usuário que será deletado (inteiro).
-
-    2. Conecta ao banco de dados 'exemplo.db'.
-
-    3. Cria um cursor, usado para executar comandos SQL.
-
-    4. Monta o comando SQL de exclusão:
-       "DELETE FROM usuarios WHERE id = ?"
-       O "?" é um placeholder para evitar SQL Injection.
-
-    5. Executa o comando passando o ID do usuário como parâmetro.
-
-    6. Confirma as mudanças no banco (commit) e fecha a conexão.
-
-    7. O usuário com o ID informado será removido da tabela, 
-       se existir.
-    """
-    conexao = sqlite3.connect('exemplo.db')
-    cursor = conexao.cursor()
-
-    comando = "DELETE FROM usuarios WHERE id = ?"
-    cursor.execute(comando, (id_usuario,))
-
-    conexao.commit()
-    conexao.close()
-
-
-
-
+    return resultados
 
 agent = Agent(
     model= model,
     tools= [
         criar_tabela,
-        adicionar_usuario,
-        atualizar_usuario,
-        listar_usuarios,
-        deletar_usuario,
+        inserir_dados,
+        atualizar_registros,
+        excluir_registros,
+        listar_registros,
         TavilyTools()],
     instructions="responda em português, seja direto, fale como se falasse com uma criança, seja assertivo, sempre mostre os dados em uma tabela",
     debug_mode = True
